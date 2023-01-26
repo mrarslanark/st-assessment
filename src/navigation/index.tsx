@@ -15,8 +15,20 @@ export enum Routes {
 
 type StackParamList = {
   [Routes.HOME]: {} | undefined;
-  [Routes.FOLLOWERS]: {} | undefined;
-  [Routes.FOLLOWING]: {} | undefined;
+  [Routes.FOLLOWERS]:
+    | {
+        name: string;
+        url: string;
+        count: number;
+      }
+    | undefined;
+  [Routes.FOLLOWING]:
+    | {
+        name: string;
+        url: string;
+        count: number;
+      }
+    | undefined;
 };
 
 export type HomeProps = NativeStackScreenProps<StackParamList, Routes.HOME>;
