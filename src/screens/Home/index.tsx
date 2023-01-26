@@ -1,7 +1,6 @@
-import React, {useCallback, useEffect, useRef, useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import {
   Alert,
-  Button,
   StyleSheet,
   Text,
   TextInput,
@@ -9,7 +8,6 @@ import {
   View,
 } from 'react-native';
 import {HomeProps, Routes} from '../../navigation';
-import {debounce} from 'lodash';
 
 type GitHubDataType = {
   username: string;
@@ -30,15 +28,16 @@ type GitHubDataType = {
 
 const Home: React.FC<HomeProps> = ({navigation, route}) => {
   const params = route.params;
+
   const [searchText, setSearchText] = useState<string>('');
-  const [profile, setProfile] = useState<GitHubDataType | null | undefined>();
+  const [profile, setProfile] = useState<GitHubDataType | null>();
   const timeout = useRef<number>(0);
 
   useEffect(() => {
-    if (params && params.username) {
+    if (params?.username) {
       setSearchText(params.username);
     }
-  }, [params]);
+  }, [params?.username]);
 
   useEffect(() => {
     clearTimeout(timeout.current);
@@ -53,13 +52,10 @@ const Home: React.FC<HomeProps> = ({navigation, route}) => {
       try {
         const response = await fetch(url, {method: 'GET'});
         if (!response.ok) {
-          return;
-        }
-        const data = await response.json();
-        if (data.message === 'Not Found') {
           setProfile(null);
           return;
         }
+        const data = await response.json();
         setProfile({
           name: data.name,
           username: data.login,
@@ -84,7 +80,7 @@ const Home: React.FC<HomeProps> = ({navigation, route}) => {
         console.log(err);
       }
     }, 1000);
-  }, [searchText, params?.username]);
+  }, [searchText]);
 
   function handleAudience(title: string, count: number, type: string) {
     if (!profile) {
@@ -106,8 +102,9 @@ const Home: React.FC<HomeProps> = ({navigation, route}) => {
           style={styles.input}
           placeholder={'Search by username'}
           onChangeText={setSearchText}
-          value={searchText}
           autoCapitalize={'none'}
+          clearButtonMode="while-editing"
+          defaultValue={searchText}
         />
       </View>
 
@@ -130,11 +127,11 @@ const Home: React.FC<HomeProps> = ({navigation, route}) => {
             <Text>Following count: {profile.following.count}</Text>
           </TouchableOpacity>
         </View>
-      ) : profile === null ? (
+      ) : (
         <View>
           <Text>Not Found</Text>
         </View>
-      ) : null}
+      )}
     </View>
   );
 };
