@@ -39,7 +39,6 @@ const EntryPoint: React.FC = (): JSX.Element => {
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: 'white',
   },
 });
 
