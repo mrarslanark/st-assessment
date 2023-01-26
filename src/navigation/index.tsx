@@ -12,7 +12,12 @@ export enum Routes {
 }
 
 type StackParamList = {
-  [Routes.HOME]: {} | undefined;
+  [Routes.HOME]:
+    | {
+        username: string;
+        profile: string;
+      }
+    | undefined;
   [Routes.AUDIENCE]: {
     name: string;
     username: string;

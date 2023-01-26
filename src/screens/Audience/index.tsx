@@ -8,9 +8,9 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import {AudienceProps} from '../../navigation';
+import {AudienceProps, Routes} from '../../navigation';
 
-type FollowerType = {
+type AudienceType = {
   username: string;
   avatar: string;
   profile: string;
@@ -20,7 +20,7 @@ const Audience: React.FC<AudienceProps> = ({navigation, route}) => {
   const params = route.params;
 
   const [page, setPage] = useState(1);
-  const [users, setUsers] = useState<FollowerType[]>([]);
+  const [users, setUsers] = useState<AudienceType[]>([]);
 
   useEffect(() => {
     navigation.setOptions({title: params.title});
@@ -54,6 +54,13 @@ const Audience: React.FC<AudienceProps> = ({navigation, route}) => {
     })();
   }, [page, params.type, params.username]);
 
+  function handleProfilePress(user: AudienceType) {
+    navigation.navigate(Routes.HOME, {
+      username: user.username,
+      profile: user.profile,
+    });
+  }
+
   if (!params) {
     Alert.alert(
       'Something went wrong',
@@ -76,7 +83,9 @@ const Audience: React.FC<AudienceProps> = ({navigation, route}) => {
           onEndReached={() => setPage((prevState: number) => prevState + 1)}
           renderItem={({item}) => {
             return (
-              <TouchableOpacity style={styles.itemContainer}>
+              <TouchableOpacity
+                onPress={() => handleProfilePress(item)}
+                style={styles.itemContainer}>
                 <Image source={{uri: item.avatar}} style={styles.avatar} />
                 <Text style={styles.username}>{item.username}</Text>
               </TouchableOpacity>
