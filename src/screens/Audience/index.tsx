@@ -1,5 +1,5 @@
-import React, {useEffect, useState} from 'react';
-import {Alert, FlatList, Text, View} from 'react-native';
+import React, {useCallback, useEffect, useState} from 'react';
+import {Alert, FlatList, RefreshControl, Text, View} from 'react-native';
 import AudienceItemView from '../../components/AudienceItemView';
 import {AudienceProps, Routes} from '../../navigation';
 import {capitalize} from '../../utils';
@@ -18,6 +18,7 @@ const Audience: React.FC<AudienceProps> = ({navigation, route}) => {
 
   const [page, setPage] = useState(1);
   const [users, setUsers] = useState<AudienceType[]>([]);
+  const [refreshing, setRefreshing] = useState(false);
 
   // TODO: Create a capitalize function
   useEffect(() => {
@@ -27,20 +28,23 @@ const Audience: React.FC<AudienceProps> = ({navigation, route}) => {
   }, [navigation, params]);
 
   useEffect(() => {
-    (async () => {
-      try {
-        const audience = await fetchAudience(
-          params.username,
-          params.type,
-          page,
-        );
-        setUsers(audience);
-      } catch (err: any) {
-        Alert.alert(messages.GENERAL_ERROR_TITLE, err?.message);
-        console.log(err);
-      }
-    })();
-  }, [page, params.type, params.username]);
+    fetchData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [page]);
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await fetchData();
+    setRefreshing(false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  if (!params) {
+    Alert.alert(messages.GENERAL_ERROR_TITLE, messages.GENERAL_ERROR_MESSAGE, [
+      {text: 'Ok', onPress: () => navigation.pop()},
+    ]);
+    return null;
+  }
 
   function handleProfilePress(user: AudienceType) {
     navigation.navigate(Routes.HOME, {
@@ -49,11 +53,14 @@ const Audience: React.FC<AudienceProps> = ({navigation, route}) => {
     });
   }
 
-  if (!params) {
-    Alert.alert(messages.GENERAL_ERROR_TITLE, messages.GENERAL_ERROR_MESSAGE, [
-      {text: 'Ok', onPress: () => navigation.pop()},
-    ]);
-    return null;
+  async function fetchData() {
+    try {
+      const audience = await fetchAudience(params.username, params.type, page);
+      setUsers(audience);
+    } catch (err: any) {
+      Alert.alert(messages.GENERAL_ERROR_TITLE, err?.message);
+      console.log(err);
+    }
   }
 
   return (
@@ -65,24 +72,25 @@ const Audience: React.FC<AudienceProps> = ({navigation, route}) => {
         <Text style={styles.count}>Total Followers: {params.count}</Text>
       </View>
       <View style={styles.listContainer}>
-        {users.length > 0 ? (
-          <FlatList
-            data={users}
-            numColumns={2}
-            showsVerticalScrollIndicator={false}
-            columnWrapperStyle={styles.columnWrapperStyle}
-            keyExtractor={item => item.username}
-            onEndReached={() => setPage((prevState: number) => prevState + 1)}
-            renderItem={({item}) => {
-              return (
-                <AudienceItemView
-                  {...item}
-                  onPress={() => handleProfilePress(item)}
-                />
-              );
-            }}
-          />
-        ) : null}
+        <FlatList
+          data={users}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          }
+          numColumns={2}
+          showsVerticalScrollIndicator={false}
+          columnWrapperStyle={styles.columnWrapperStyle}
+          keyExtractor={item => item.username}
+          onEndReached={() => setPage((prevState: number) => prevState + 1)}
+          renderItem={({item}) => {
+            return (
+              <AudienceItemView
+                {...item}
+                onPress={() => handleProfilePress(item)}
+              />
+            );
+          }}
+        />
       </View>
     </View>
   );

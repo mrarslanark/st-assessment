@@ -49,7 +49,7 @@ export async function fetchAudience(
   username: string,
   type: 'following' | 'followers',
   pageCount: number,
-): Promise<AudienceType> {
+): Promise<AudienceType[]> {
   const url = `https://api.github.com/users/${username}/${type}?per_page=${
     pageCount * 10
   }`;

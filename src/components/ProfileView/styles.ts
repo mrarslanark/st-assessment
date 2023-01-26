@@ -13,12 +13,14 @@ const styles = StyleSheet.create({
     alignContent: 'center',
     alignItems: 'center',
   },
-
   heading: {
     fontWeight: 'bold',
     fontSize: 28,
     color: 'black',
     textAlign: 'center',
+    alignSelf: 'center',
+    height: 40,
+    width: 100,
   },
   avatar: {
     width: 75,
@@ -41,7 +43,6 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: '600',
     marginBottom: 8,
-    color: 'black',
   },
   description: {
     color: 'black',

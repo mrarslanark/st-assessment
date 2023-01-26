@@ -14,6 +14,7 @@ const Home: React.FC<HomeProps> = ({navigation, route}) => {
   const [searchText, setSearchText] = useState<string>('');
   const [profile, setProfile] = useState<GitHubDataType | null>();
   const [idle, setIdle] = useState<boolean>(true);
+  const [loading, setLoading] = useState(false);
 
   const timeout = useRef<number>(0);
 
@@ -33,13 +34,18 @@ const Home: React.FC<HomeProps> = ({navigation, route}) => {
       return;
     }
 
+    setLoading(true);
     timeout.current = setTimeout(async () => {
       try {
         const result = await fetchUser(searchText);
-        setIdle(false);
         setProfile(result);
+        setIdle(false);
+        setTimeout(() => {
+          setLoading(false);
+        }, 1000);
       } catch (err) {
         // Add third party services like Dynatrace to catch production errors
+        setLoading(false);
         setProfile(null);
       }
     }, 300);
@@ -79,6 +85,7 @@ const Home: React.FC<HomeProps> = ({navigation, route}) => {
       {profile ? (
         <ProfileView
           {...profile}
+          loading={loading}
           onPressFollowers={() => handleAudience('followers')}
           onPressFollowing={() => handleAudience('following')}
         />
