@@ -12,8 +12,9 @@ import {
   StyleSheet,
   useColorScheme,
 } from 'react-native';
-
+import {NavigationContainer} from '@react-navigation/native';
 import {Colors} from 'react-native/Libraries/NewAppScreen';
+import Navigation from './src/navigation';
 
 const EntryPoint: React.FC = (): JSX.Element => {
   const isDarkMode = useColorScheme() === 'dark';
@@ -24,7 +25,9 @@ const EntryPoint: React.FC = (): JSX.Element => {
 
   return (
     <SafeAreaView style={[backgroundStyle, styles.root]}>
-      {/* Add Navigation Container Here */}
+      <NavigationContainer>
+        <Navigation />
+      </NavigationContainer>
       <StatusBar
         barStyle={isDarkMode ? 'light-content' : 'dark-content'}
         backgroundColor={backgroundStyle.backgroundColor}
