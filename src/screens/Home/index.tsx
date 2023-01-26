@@ -70,25 +70,16 @@ const Home: React.FC<HomeProps> = ({navigation}) => {
     }
   }
 
-  function handleFollowers() {
+  function handleAudience(title: string, count: number, type: string) {
     if (!profile) {
       return;
     }
-    navigation.navigate(Routes.FOLLOWERS, {
+    navigation.navigate(Routes.AUDIENCE, {
       name: profile.name,
-      count: profile.followers.count,
-      url: profile.followers.url,
-    });
-  }
-
-  function handleFollowing() {
-    if (!profile) {
-      return;
-    }
-    navigation.navigate(Routes.FOLLOWING, {
-      name: profile.name,
-      count: profile.following.count,
-      url: profile.following.url,
+      username: profile.username,
+      count,
+      title,
+      type,
     });
   }
 
@@ -111,10 +102,16 @@ const Home: React.FC<HomeProps> = ({navigation}) => {
           <Text>Username: {profile.username}</Text>
           <Text>Name: {profile.name}</Text>
           <Text>Description: {profile.description}</Text>
-          <TouchableOpacity onPress={handleFollowers}>
+          <TouchableOpacity
+            onPress={() =>
+              handleAudience('Followers', profile.followers.count, 'followers')
+            }>
             <Text>Follower count: {profile.followers.count}</Text>
           </TouchableOpacity>
-          <TouchableOpacity onPress={handleFollowing}>
+          <TouchableOpacity
+            onPress={() =>
+              handleAudience('Following', profile.following.count, 'following')
+            }>
             <Text>Following count: {profile.following.count}</Text>
           </TouchableOpacity>
         </View>

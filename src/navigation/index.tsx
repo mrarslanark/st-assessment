@@ -3,42 +3,29 @@ import {
   createNativeStackNavigator,
 } from '@react-navigation/native-stack';
 import React from 'react';
-import Followers from '../screens/Followers/index';
-import Following from '../screens/Following';
+import Audience from '../screens/Audience';
 import Home from '../screens/Home';
 
 export enum Routes {
   HOME = 'Home',
-  FOLLOWERS = 'Followers',
-  FOLLOWING = 'Following',
+  AUDIENCE = 'Audience',
 }
 
 type StackParamList = {
   [Routes.HOME]: {} | undefined;
-  [Routes.FOLLOWERS]:
-    | {
-        name: string;
-        url: string;
-        count: number;
-      }
-    | undefined;
-  [Routes.FOLLOWING]:
-    | {
-        name: string;
-        url: string;
-        count: number;
-      }
-    | undefined;
+  [Routes.AUDIENCE]: {
+    name: string;
+    username: string;
+    count: number;
+    title: string;
+    type: string;
+  };
 };
 
 export type HomeProps = NativeStackScreenProps<StackParamList, Routes.HOME>;
-export type FollowersProps = NativeStackScreenProps<
+export type AudienceProps = NativeStackScreenProps<
   StackParamList,
-  Routes.FOLLOWERS
->;
-export type FollowingProps = NativeStackScreenProps<
-  StackParamList,
-  Routes.FOLLOWING
+  Routes.AUDIENCE
 >;
 
 const Stack = createNativeStackNavigator<StackParamList>();
@@ -50,16 +37,7 @@ const Navigation: React.FC = (): JSX.Element => {
         options={{title: 'GitHub Profiles'}}
         component={Home}
       />
-      <Stack.Screen
-        name={Routes.FOLLOWERS}
-        options={{title: 'Followers'}}
-        component={Followers}
-      />
-      <Stack.Screen
-        name={Routes.FOLLOWING}
-        options={{title: 'Following'}}
-        component={Following}
-      />
+      <Stack.Screen name={Routes.AUDIENCE} component={Audience} />
     </Stack.Navigator>
   );
 };
