@@ -1,27 +1,12 @@
 import React, {useEffect, useRef, useState} from 'react';
-import {Alert, TextInput, View} from 'react-native';
+import {TextInput, View} from 'react-native';
+
 import ProfileView from '../../components/ProfileView';
 import ResponseView from '../../components/ResponseView';
 import {images} from '../../constants';
 import {HomeProps, Routes} from '../../navigation';
+import {GitHubDataType, fetchUser} from '../../services';
 import styles from './styles';
-
-type GitHubDataType = {
-  username: string;
-  avatar: string;
-  name: string;
-  description: string;
-  createdAt: string;
-  updatedAt: string;
-  followers: {
-    url: string;
-    count: number;
-  };
-  following: {
-    url: string;
-    count: number;
-  };
-};
 
 const Home: React.FC<HomeProps> = ({navigation, route}) => {
   const params = route.params;
@@ -49,40 +34,19 @@ const Home: React.FC<HomeProps> = ({navigation, route}) => {
     }
 
     timeout.current = setTimeout(async () => {
-      const url = `https://api.github.com/users/${searchText}`;
       try {
-        const response = await fetch(url, {method: 'GET'});
+        const result = await fetchUser(searchText);
         setIdle(false);
-        if (!response.ok) {
-          // Not Found
-          setProfile(null);
-          return;
-        }
-        const data = await response.json();
-        setProfile({
-          name: data.name,
-          username: data.login,
-          avatar: data.avatar_url,
-          createdAt: data.created_at,
-          updatedAt: data.updated_at,
-          description: data.bio,
-          followers: {
-            count: data.followers,
-            url: data.followers_url,
-          },
-          following: {
-            count: data.following,
-            url: data.following_url,
-          },
-        });
+        setProfile(result);
       } catch (err) {
-        Alert.alert(
-          'Something went wrong',
-          'Sorry for the inconvinence. The issue has been reported. We will take care of it.',
-        );
-        console.log(err);
+        // Add third party services like Dynatrace to catch production errors
+        setProfile(null);
       }
-    }, 1000);
+    }, 300);
+
+    return () => {
+      clearTimeout(timeout.current);
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchText]);
 
@@ -114,12 +78,7 @@ const Home: React.FC<HomeProps> = ({navigation, route}) => {
 
       {profile ? (
         <ProfileView
-          avatar={profile.avatar}
-          name={profile.name}
-          username={profile.username}
-          description={profile.description}
-          followers={profile.followers.count}
-          following={profile.following.count}
+          {...profile}
           onPressFollowers={() => handleAudience('followers')}
           onPressFollowing={() => handleAudience('following')}
         />

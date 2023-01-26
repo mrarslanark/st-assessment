@@ -22,7 +22,7 @@ type StackParamList = {
     name: string;
     username: string;
     count: number;
-    type: string;
+    type: 'following' | 'followers';
   };
 };
 

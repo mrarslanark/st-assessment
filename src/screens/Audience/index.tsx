@@ -1,17 +1,13 @@
 import React, {useEffect, useState} from 'react';
-import {
-  Alert,
-  FlatList,
-  Image,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import {Alert, FlatList, Text, View} from 'react-native';
+import AudienceItemView from '../../components/AudienceItemView';
 import {AudienceProps, Routes} from '../../navigation';
 import {capitalize} from '../../utils';
+import styles from './styles';
+import {fetchAudience} from '../../services';
+import {messages} from '../../constants';
 
-type AudienceType = {
+export type AudienceType = {
   username: string;
   avatar: string;
   profile: string;
@@ -32,27 +28,15 @@ const Audience: React.FC<AudienceProps> = ({navigation, route}) => {
 
   useEffect(() => {
     (async () => {
-      const url = `https://api.github.com/users/${params.username}/${
-        params.type
-      }?per_page=${page * 10}`;
       try {
-        const request = await fetch(url, {method: 'GET'});
-        const json = await request.json();
-        if (json.length > 0) {
-          const data = json.map((user: any) => {
-            return {
-              username: user.login,
-              avatar: user.avatar_url,
-              profile: user.url,
-            };
-          });
-          setUsers(data);
-        }
-      } catch (err) {
-        Alert.alert(
-          'Something went wrong',
-          'Sorry for the inconvinence. The issue has been reported. We will take care of it.',
+        const audience = await fetchAudience(
+          params.username,
+          params.type,
+          page,
         );
+        setUsers(audience);
+      } catch (err: any) {
+        Alert.alert(messages.GENERAL_ERROR_TITLE, err?.message);
         console.log(err);
       }
     })();
@@ -66,58 +50,42 @@ const Audience: React.FC<AudienceProps> = ({navigation, route}) => {
   }
 
   if (!params) {
-    Alert.alert(
-      'Something went wrong',
-      'Sorry for the inconvinence. The issue has been reported. We will take care of it. Kindly, return back to the previous screen',
-      [{text: 'Yes', onPress: () => navigation.pop()}],
-    );
+    Alert.alert(messages.GENERAL_ERROR_TITLE, messages.GENERAL_ERROR_MESSAGE, [
+      {text: 'Ok', onPress: () => navigation.pop()},
+    ]);
     return null;
   }
 
   return (
-    <View>
-      <Text>
-        {params.name} {params.type}
-      </Text>
-      <Text>Total Followers: {params.count}</Text>
-      {users.length > 0 ? (
-        <FlatList
-          data={users}
-          keyExtractor={item => item.username}
-          onEndReached={() => setPage((prevState: number) => prevState + 1)}
-          renderItem={({item}) => {
-            return (
-              <TouchableOpacity
-                onPress={() => handleProfilePress(item)}
-                style={styles.itemContainer}>
-                <Image source={{uri: item.avatar}} style={styles.avatar} />
-                <Text style={styles.username}>{item.username}</Text>
-              </TouchableOpacity>
-            );
-          }}
-        />
-      ) : null}
+    <View style={styles.container}>
+      <View style={styles.header}>
+        <Text style={styles.followers}>
+          {params.name} {params.type}
+        </Text>
+        <Text style={styles.count}>Total Followers: {params.count}</Text>
+      </View>
+      <View style={styles.listContainer}>
+        {users.length > 0 ? (
+          <FlatList
+            data={users}
+            numColumns={2}
+            showsVerticalScrollIndicator={false}
+            columnWrapperStyle={styles.columnWrapperStyle}
+            keyExtractor={item => item.username}
+            onEndReached={() => setPage((prevState: number) => prevState + 1)}
+            renderItem={({item}) => {
+              return (
+                <AudienceItemView
+                  {...item}
+                  onPress={() => handleProfilePress(item)}
+                />
+              );
+            }}
+          />
+        ) : null}
+      </View>
     </View>
   );
 };
 
 export default Audience;
-
-const styles = StyleSheet.create({
-  itemContainer: {
-    flexDirection: 'row',
-    padding: 16,
-    alignContent: 'center',
-    alignItems: 'center',
-  },
-  avatar: {
-    width: 50,
-    height: 50,
-    resizeMode: 'contain',
-    borderRadius: 100,
-  },
-  username: {
-    marginLeft: 12,
-    fontSize: 16,
-  },
-});

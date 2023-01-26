@@ -4,12 +4,20 @@ import AudienceStatus from '../AudienceStatus';
 import styles from './styles';
 
 interface IProfileView {
+  username: string;
   avatar: string;
   name: string;
-  username: string;
   description: string;
-  followers: number;
-  following: number;
+  createdAt: string;
+  updatedAt: string;
+  followers: {
+    url: string;
+    count: number;
+  };
+  following: {
+    url: string;
+    count: number;
+  };
   onPressFollowers: ((event: GestureResponderEvent) => void) | undefined;
   onPressFollowing: ((event: GestureResponderEvent) => void) | undefined;
 }
@@ -36,16 +44,16 @@ const ProfileView: React.FC<IProfileView> = ({
       </View>
       <View style={styles.audienceContainer}>
         <AudienceStatus
-          count={followers}
+          count={followers.count}
           onPress={onPressFollowers}
           type="followers"
-          disabled={followers === 0}
+          disabled={followers.count === 0}
         />
         <AudienceStatus
-          count={following}
+          count={following.count}
           onPress={onPressFollowing}
           type="following"
-          disabled={following === 0}
+          disabled={following.count === 0}
         />
       </View>
       <View style={styles.divider} />
