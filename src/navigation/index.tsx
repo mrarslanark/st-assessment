@@ -22,7 +22,6 @@ type StackParamList = {
     name: string;
     username: string;
     count: number;
-    title: string;
     type: string;
   };
 };
@@ -36,13 +35,19 @@ export type AudienceProps = NativeStackScreenProps<
 const Stack = createNativeStackNavigator<StackParamList>();
 const Navigation: React.FC = (): JSX.Element => {
   return (
-    <Stack.Navigator>
+    <Stack.Navigator screenOptions={{headerBackTitle: 'Back'}}>
       <Stack.Screen
         name={Routes.HOME}
-        options={{title: 'GitHub Profiles'}}
+        options={{title: 'Home'}}
         component={Home}
       />
-      <Stack.Screen name={Routes.AUDIENCE} component={Audience} />
+      <Stack.Screen
+        options={{
+          headerLargeTitle: false,
+        }}
+        name={Routes.AUDIENCE}
+        component={Audience}
+      />
     </Stack.Navigator>
   );
 };

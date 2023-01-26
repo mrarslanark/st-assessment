@@ -1,13 +1,10 @@
 import React, {useEffect, useRef, useState} from 'react';
-import {
-  Alert,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import {Alert, TextInput, View} from 'react-native';
+import ProfileView from '../../components/ProfileView';
+import ResponseView from '../../components/ResponseView';
+import {images} from '../../constants';
 import {HomeProps, Routes} from '../../navigation';
+import styles from './styles';
 
 type GitHubDataType = {
   username: string;
@@ -31,6 +28,8 @@ const Home: React.FC<HomeProps> = ({navigation, route}) => {
 
   const [searchText, setSearchText] = useState<string>('');
   const [profile, setProfile] = useState<GitHubDataType | null>();
+  const [idle, setIdle] = useState<boolean>(true);
+
   const timeout = useRef<number>(0);
 
   useEffect(() => {
@@ -42,8 +41,10 @@ const Home: React.FC<HomeProps> = ({navigation, route}) => {
   useEffect(() => {
     clearTimeout(timeout.current);
 
-    if (searchText.trim().length === 0) {
+    const isTextEmpty = searchText.length === 0;
+    if (isTextEmpty) {
       setProfile(null);
+      setIdle(true);
       return;
     }
 
@@ -51,7 +52,9 @@ const Home: React.FC<HomeProps> = ({navigation, route}) => {
       const url = `https://api.github.com/users/${searchText}`;
       try {
         const response = await fetch(url, {method: 'GET'});
+        setIdle(false);
         if (!response.ok) {
+          // Not Found
           setProfile(null);
           return;
         }
@@ -80,17 +83,18 @@ const Home: React.FC<HomeProps> = ({navigation, route}) => {
         console.log(err);
       }
     }, 1000);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchText]);
 
-  function handleAudience(title: string, count: number, type: string) {
+  function handleAudience(type: 'following' | 'followers') {
     if (!profile) {
       return;
     }
+    const {name, username} = profile;
     navigation.navigate(Routes.AUDIENCE, {
-      name: profile.name,
-      username: profile.username,
-      count,
-      title,
+      name,
+      username,
+      count: profile[type].count,
       type,
     });
   }
@@ -100,7 +104,7 @@ const Home: React.FC<HomeProps> = ({navigation, route}) => {
       <View style={styles.inputContainer}>
         <TextInput
           style={styles.input}
-          placeholder={'Search by username'}
+          placeholder={'Search Github users by username'}
           onChangeText={setSearchText}
           autoCapitalize={'none'}
           clearButtonMode="while-editing"
@@ -109,45 +113,29 @@ const Home: React.FC<HomeProps> = ({navigation, route}) => {
       </View>
 
       {profile ? (
-        <View>
-          <Text>GitHub Profile Details</Text>
-          <Text>Username: {profile.username}</Text>
-          <Text>Name: {profile.name}</Text>
-          <Text>Description: {profile.description}</Text>
-          <TouchableOpacity
-            onPress={() =>
-              handleAudience('Followers', profile.followers.count, 'followers')
-            }>
-            <Text>Follower count: {profile.followers.count}</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() =>
-              handleAudience('Following', profile.following.count, 'following')
-            }>
-            <Text>Following count: {profile.following.count}</Text>
-          </TouchableOpacity>
-        </View>
+        <ProfileView
+          avatar={profile.avatar}
+          name={profile.name}
+          username={profile.username}
+          description={profile.description}
+          followers={profile.followers.count}
+          following={profile.following.count}
+          onPressFollowers={() => handleAudience('followers')}
+          onPressFollowing={() => handleAudience('following')}
+        />
+      ) : idle ? (
+        <ResponseView
+          image={images.SEARCH}
+          message={'Search GitHub Profiles'}
+        />
       ) : (
-        <View>
-          <Text>Not Found</Text>
-        </View>
+        <ResponseView
+          image={images.NOT_FOUND}
+          message={'No user found. Try Again'}
+        />
       )}
     </View>
   );
 };
 
 export default Home;
-
-const styles = StyleSheet.create({
-  container: {
-    padding: 16,
-  },
-  inputContainer: {
-    marginBottom: 16,
-  },
-  input: {
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(0, 0, 0, 0.1)',
-    padding: 16,
-  },
-});

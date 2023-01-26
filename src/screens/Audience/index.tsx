@@ -9,6 +9,7 @@ import {
   View,
 } from 'react-native';
 import {AudienceProps, Routes} from '../../navigation';
+import {capitalize} from '../../utils';
 
 type AudienceType = {
   username: string;
@@ -22,9 +23,12 @@ const Audience: React.FC<AudienceProps> = ({navigation, route}) => {
   const [page, setPage] = useState(1);
   const [users, setUsers] = useState<AudienceType[]>([]);
 
+  // TODO: Create a capitalize function
   useEffect(() => {
-    navigation.setOptions({title: params.title});
-  }, [navigation, params.title]);
+    navigation.setOptions({
+      title: capitalize(params.type),
+    });
+  }, [navigation, params]);
 
   useEffect(() => {
     (async () => {
